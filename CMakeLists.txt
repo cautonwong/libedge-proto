@@ -18,6 +18,7 @@ file(GLOB_RECURSE LIB_SOURCES
     "src/core/*.c"
     "src/common/*.c"
     "src/protocols/modbus/*.c"
+    "src/protocols/modbus/mb_parser.c" # Added new file
     "src/protocols/dlms/*.c"
     "src/protocols/dlt645/*.c"
     "src/protocols/dlt698/*.c"

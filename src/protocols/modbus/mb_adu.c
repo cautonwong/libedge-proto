@@ -1,8 +1,12 @@
 #include "protocols/edge_modbus.h"
 #include "common/crc.h"
-#include <string.h>
-#include <stdio.h> // For debugging
+#include <string.h> // For memcpy
 
+// ##############################################################################
+// # HELPERS
+// ##############################################################################
+
+// Helper to write a 16-bit value in Big Endian format
 static void write_u16_be(uint8_t *buf, uint16_t value) {
     buf[0] = (uint8_t)(value >> 8);
     buf[1] = (uint8_t)(value & 0xFF);
@@ -13,11 +17,25 @@ static void write_u16_le(uint8_t *buf, uint16_t value) {
     buf[1] = (uint8_t)(value >> 8);
 }
 
+// Helper to read a 16-bit value in Big Endian format (for parsing)
+static edge_error_t cursor_read_be16(edge_cursor_t *c, uint16_t *val) {
+    uint8_t buf[2];
+    EDGE_ASSERT_OK(edge_cursor_read_bytes(c, buf, 2));
+    *val = (uint16_t)(((uint16_t)buf[0] << 8) | buf[1]);
+    return EDGE_OK;
+}
+
+
+// ##############################################################################
+// # PUBLIC API - Request Builders
+// ##############################################################################
+
 void edge_modbus_init_context(edge_modbus_context_t *ctx, uint8_t slave_id, bool is_tcp) {
     if (!ctx) return;
     memset(ctx, 0, sizeof(edge_modbus_context_t));
     ctx->slave_id = slave_id;
     ctx->is_tcp = is_tcp;
+    ctx->transaction_id = 0; // Start at 0, will increment before first use
 }
 
 // Generic builder for simple read requests
@@ -57,7 +75,7 @@ static edge_error_t build_simple_read_req(edge_modbus_context_t *ctx, edge_vecto
         for(int i = 0; i < v->used_count; i++) {
             crc = edge_crc16_modbus_update(crc, v->iovs[i].iov_base, v->iovs[i].iov_len);
         }
-        write_u16_le(ctx->crc_buf, crc);
+        write_u16_le(ctx->crc_buf, crc); 
         
         edge_error_t append_err = edge_vector_append_ref(v, ctx->crc_buf, 2); // Capture return value
         if (append_err != EDGE_OK) return append_err; // Check explicitly
@@ -245,6 +263,7 @@ edge_error_t edge_modbus_build_write_multiple_registers_req(
 
     return EDGE_OK;
 }
+
 // ##############################################################################
 // # PARSING LOGIC - Not yet refactored to use Cursor
 // ##############################################################################

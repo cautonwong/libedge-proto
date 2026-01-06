@@ -69,6 +69,7 @@ typedef struct {
 
 void edge_modbus_init_context(edge_modbus_context_t *ctx, uint8_t slave_id, bool is_tcp);
 
+// Builders
 edge_error_t edge_modbus_build_read_coils_req(
     edge_modbus_context_t *ctx, edge_vector_t *v, uint16_t address, uint16_t quantity);
 
@@ -87,6 +88,7 @@ edge_error_t edge_modbus_build_write_multiple_coils_req(
 edge_error_t edge_modbus_build_write_multiple_registers_req(
     edge_modbus_context_t *ctx, edge_vector_t *v, uint16_t address, uint16_t quantity, const uint16_t *data);
 
+// Parser
 edge_error_t edge_modbus_parse_frame(
     edge_modbus_context_t *ctx,
     const uint8_t *frame_data,

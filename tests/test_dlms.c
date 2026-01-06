@@ -28,7 +28,7 @@ static void test_build_get_request_normal(void **state) {
         0x01, // Choice: get-request-normal
         0xC1, // Invoke ID
         // Cosem-Attribute-Descriptor
-        0x02, // SEQUENCE
+        0x02, // tag: structure
         0x03, // 3 components
             // Class ID
             0x12, // tag: long-unsigned

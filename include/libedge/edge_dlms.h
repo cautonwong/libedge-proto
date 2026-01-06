@@ -15,6 +15,17 @@ typedef enum {
     // ... other apdu tags
 } edge_dlms_apdu_tag_t;
 
+// xDLMS Data Tags
+typedef enum {
+    DLMS_DATA_TAG_NULL              = 0,
+    DLMS_DATA_TAG_STRUCTURE         = 2,
+    DLMS_DATA_TAG_OCTET_STRING      = 9,
+    DLMS_DATA_TAG_INTEGER           = 15,
+    DLMS_DATA_TAG_LONG              = 16,
+    DLMS_DATA_TAG_UNSIGNED          = 17,
+    DLMS_DATA_TAG_LONG_UNSIGNED     = 18,
+} edge_dlms_data_tag_t;
+
 // Get-Request APDU Choice
 typedef enum {
     DLMS_GET_REQUEST_NORMAL = 1,

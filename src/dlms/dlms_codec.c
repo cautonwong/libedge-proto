@@ -2,15 +2,55 @@
 #include <string.h>
 
 // ##############################################################################
-// # xDLMS Data Encoders (Simplified)
+// # Internal A-XDR Encoders
 // ##############################################################################
 
-// Returns number of bytes written
-static size_t encode_u16(uint8_t *buf, uint16_t value) {
+// Each encoder function writes to the buffer and returns the number of bytes written.
+
+static size_t axdr_encode_u16(uint8_t *buf, uint16_t value) {
     buf[0] = (uint8_t)(value >> 8);
     buf[1] = (uint8_t)(value & 0xFF);
     return 2;
 }
+
+static size_t axdr_encode_i8(uint8_t *buf, int8_t value) {
+    buf[0] = (uint8_t)value;
+    return 1;
+}
+
+static size_t axdr_encode_octet_string(uint8_t *buf, const uint8_t *str, uint8_t len) {
+    buf[0] = len;
+    memcpy(&buf[1], str, len);
+    return 1 + len;
+}
+
+static size_t axdr_encode_cosem_attribute_descriptor(
+    uint8_t *buf,
+    uint16_t class_id,
+    const uint8_t obis_code[6],
+    int8_t attribute_id)
+{
+    size_t offset = 0;
+    
+    // SEQUENCE { ... }
+    buf[offset++] = DLMS_DATA_TAG_STRUCTURE;
+    buf[offset++] = 3; // 3 components
+
+    // class-id: long-unsigned
+    buf[offset++] = DLMS_DATA_TAG_LONG_UNSIGNED;
+    offset += axdr_encode_u16(&buf[offset], class_id);
+
+    // instance-id: octet-string
+    buf[offset++] = DLMS_DATA_TAG_OCTET_STRING;
+    offset += axdr_encode_octet_string(&buf[offset], obis_code, 6);
+
+    // attribute-id: integer
+    buf[offset++] = DLMS_DATA_TAG_INTEGER;
+    offset += axdr_encode_i8(&buf[offset], attribute_id);
+
+    return offset;
+}
+
 
 // ##############################################################################
 // # Public API
@@ -31,34 +71,17 @@ edge_error_t edge_dlms_build_get_request_normal(
     uint8_t *frame = ctx->frame_buffer;
     size_t offset = 0;
 
-    // APDU Tag
+    // APDU Tag [C0]
     frame[offset++] = DLMS_APDU_TAG_GET_REQUEST;
-    // Get-Request Choice
+    
+    // Get-Request Choice [01]
     frame[offset++] = DLMS_GET_REQUEST_NORMAL;
+    
     // Invoke-Id-And-Priority
     frame[offset++] = invoke_id;
     
-    // Cosem-Attribute-Descriptor ::= SEQUENCE { }
-    // We are not encoding the full DLMS 'Data' type system yet,
-    // just the specific format for the attribute descriptor.
-    // [02] - SEQUENCE tag
-    // [03] - Length of sequence
-    frame[offset++] = 2; // SEQUENCE tag
-    frame[offset++] = 3; // 3 components in sequence
-
-    // class-id: long-unsigned
-    frame[offset++] = 18; // tag for long-unsigned
-    offset += encode_u16(&frame[offset], class_id);
-
-    // instance-id: octet-string
-    frame[offset++] = 9; // tag for octet-string
-    frame[offset++] = 6; // length of OBIS
-    memcpy(&frame[offset], obis_code, 6);
-    offset += 6;
-
-    // attribute-id: integer
-    frame[offset++] = 15; // tag for integer
-    frame[offset++] = (uint8_t)attribute_id;
+    // Cosem-Attribute-Descriptor
+    offset += axdr_encode_cosem_attribute_descriptor(&frame[offset], class_id, obis_code, attribute_id);
     
     out_vec->iov_base = frame;
     out_vec->iov_len = offset;

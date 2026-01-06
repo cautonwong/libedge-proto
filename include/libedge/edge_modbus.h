@@ -29,6 +29,11 @@ typedef enum {
     MODBUS_EX_SERVER_DEVICE_FAILURE         = 0x04,
 } edge_modbus_exception_code_t;
 
+// Maximum number of iovec segments a Modbus frame might need
+#define MODBUS_MAX_IOVEC_TCP 2 // MBAP Header + PDU
+#define MODBUS_MAX_IOVEC_RTU 3 // Slave ID + PDU + CRC (as separate parts)
+#define MODBUS_MAX_IOVEC (MODBUS_MAX_IOVEC_TCP > MODBUS_MAX_IOVEC_RTU ? MODBUS_MAX_IOVEC_TCP : MODBUS_MAX_IOVEC_RTU)
+
 // Modbus context structure
 typedef struct {
     edge_base_context_t base;
@@ -77,28 +82,28 @@ edge_error_t edge_modbus_build_read_coils_req(
     uint16_t address,
     uint16_t quantity,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 edge_error_t edge_modbus_build_read_discrete_inputs_req(
     edge_modbus_context_t *ctx,
     uint16_t address,
     uint16_t quantity,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 edge_error_t edge_modbus_build_read_holding_registers_req(
     edge_modbus_context_t *ctx, 
     uint16_t address, 
     uint16_t quantity,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 edge_error_t edge_modbus_build_write_single_register_req(
     edge_modbus_context_t *ctx,
     uint16_t address,
     uint16_t value,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 edge_error_t edge_modbus_build_write_multiple_coils_req(
     edge_modbus_context_t *ctx,
@@ -106,7 +111,7 @@ edge_error_t edge_modbus_build_write_multiple_coils_req(
     uint16_t quantity,
     const uint8_t *data,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 edge_error_t edge_modbus_build_write_multiple_registers_req(
     edge_modbus_context_t *ctx,
@@ -114,7 +119,7 @@ edge_error_t edge_modbus_build_write_multiple_registers_req(
     uint16_t quantity,
     const uint16_t *data,
     struct iovec *out_vec,
-    int *out_vec_count);
+    int *out_vec_capacity);
 
 
 #ifdef __cplusplus

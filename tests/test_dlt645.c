@@ -75,7 +75,7 @@ static void test_parse_dlt645_read_response(void **state) {
     // Value: 123456.78 kWh (BCD encoded as 78 56 34 12)
     // Frame: 68 Addr 68 Ctrl Len Data CS 16
     // Data payload (with +0x33 encoding): DI(4 bytes) + Value(4 bytes)
-    // CS = Sum of 18 bytes from first 68 up to CS byte -> 0x54D -> 0x4D
+    // CS = Sum of 18 bytes from first 68 up to CS byte -> Correct value is 0xD1
     const uint8_t frame[] = {
         0x68,                                   // Start
         0x12, 0x90, 0x78, 0x56, 0x34, 0x12,     // Address
@@ -84,7 +84,7 @@ static void test_parse_dlt645_read_response(void **state) {
         0x08,                                   // Length (4 for DI + 4 for data)
         0x34, 0x34, 0x33, 0x37,                 // Encoded Data ID (01010004)
         0xAB, 0x89, 0x67, 0x45,                 // Encoded Data (78563412)
-        0x4D,                                   // Checksum
+        0xD1,                                   // Checksum
         0x16                                    // End
     };
 
@@ -110,7 +110,7 @@ static void test_parse_dlt645_read_response(void **state) {
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_build_dlt645_read_req),
-        // cmocka_unit_test(test_parse_dlt645_read_response), // Temporarily disabled due to checksum issue
+        cmocka_unit_test(test_parse_dlt645_read_response),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

@@ -1,0 +1,29 @@
+# CMake / Build artifacts
+build/
+Build/
+build/
+CMakeCache.txt
+CMakefiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Compiled files
+*.o
+*.a
+*.so
+*.dylib
+
+# Executables
+run_*
+*_tests
+
+# Editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db

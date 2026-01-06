@@ -1,62 +1,73 @@
-#ifndef LIBEDGE_EDGE_CORE_H
-#define LIBEDGE_EDGE_CORE_H
+#ifndef LIBEDGE_CORE_H
+#define LIBEDGE_CORE_H
 
-#include <sys/uio.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/uio.h>
 
-// Re-define common error codes here
+/* --- 1. Error Codes --- */
 typedef enum {
     EDGE_OK = 0,
-    EDGE_ERR_GENERAL = -1,
+    EDGE_ERR_GENERIC = -1,
     EDGE_ERR_INVALID_ARG = -2,
-    EDGE_ERR_BUFFER_TOO_SMALL = -3,
-    EDGE_ERR_INVALID_FRAME = -4,
-    EDGE_ERR_INCOMPLETE_DATA = -5,
-    EDGE_ERR_OUT_OF_BOUNDS = -6,
+    EDGE_ERR_INCOMPLETE_DATA = -3,
+    EDGE_ERR_BUFFER_TOO_SMALL = -4,
+    EDGE_ERR_NOT_SUPPORTED = -5,
+    EDGE_ERR_OVERFLOW = -6,
+    EDGE_ERR_INVALID_STATE = -7,
+    EDGE_ERR_CHECKSUM = -8,
+    EDGE_ERR_INVALID_FRAME = -9,
+    EDGE_ERR_OUT_OF_BOUNDS = -10, // [补全] DNP3 需求
+    EDGE_ERR_GENERAL = -11        // [补全] 兼容性需求
 } edge_error_t;
 
-// The Vector Builder (Writer)
-#define VECTOR_SCRATCH_POOL_SIZE 64 // A small pool for tiny copies, can be tuned
-typedef struct {
-    struct iovec *iovs;       // Pointer to the iovec array provided by the caller
-    int max_capacity;         // The maximum number of iovec segments allowed
-    int used_count;           // The number of iovec segments currently used
-    size_t total_len;         // The total byte length of all segments combined
-    
-    // Internal scratch pool for tiny fixed-size copies (e.g., single bytes, uint16)
-        uint8_t scratch_pool[VECTOR_SCRATCH_POOL_SIZE];
-        size_t scratch_offset;
-    } edge_vector_t;
-    
-    // The Vector Cursor (Reader)
-    typedef struct {
-        const struct iovec *iovs; // The array of iovec segments to read from
-        int count;                // The number of segments in the iovs array
-        int current_iov;          // The index of the current iovec segment being read
-        size_t current_offset;    // The offset within the current iovec segment
-        size_t total_read;        // Total bytes read from the start
-    } edge_cursor_t;
-    
-    // Macro for asserting OK status and propagating error
-    #define EDGE_ASSERT_OK(expr) \
-        do { \
-            edge_error_t _err = (expr); \
-            if (_err != EDGE_OK) return _err; \
-        } while(0)
-    
-    
-    // --- Vector API ---
-    void edge_vector_init(edge_vector_t *v, struct iovec *iovs, int max_capacity);
-    edge_error_t edge_vector_append_ref(edge_vector_t *v, const void *ptr, size_t len);
-    edge_error_t edge_vector_append_copy(edge_vector_t *v, const void *data, size_t len);
+#define EDGE_ASSERT_OK(expr) do { \
+    edge_error_t _err = (expr); \
+    if (_err != EDGE_OK) return _err; \
+} while(0)
 
-// --- Cursor API ---
+/* --- 2. Edge Cursor (Zero-Copy Parser) --- */
+typedef struct {
+    const struct iovec *iovs;
+    int count;
+    int current_iov;
+    size_t current_offset;
+    size_t total_read;
+} edge_cursor_t;
+
 void edge_cursor_init(edge_cursor_t *c, const struct iovec *iovs, int count);
+size_t edge_cursor_remaining(const edge_cursor_t *c);
+const void* edge_cursor_get_ptr(edge_cursor_t *c, size_t len);
+edge_error_t edge_cursor_read_bytes(edge_cursor_t *c, uint8_t *buf, size_t len);
 edge_error_t edge_cursor_read_u8(edge_cursor_t *c, uint8_t *val);
 edge_error_t edge_cursor_read_be16(edge_cursor_t *c, uint16_t *val);
-edge_error_t edge_cursor_read_bytes(edge_cursor_t *c, uint8_t *buf, size_t len);
-size_t edge_cursor_remaining(const edge_cursor_t *c);
+edge_error_t edge_cursor_read_le16(edge_cursor_t *c, uint16_t *val);
+edge_error_t edge_cursor_read_be32(edge_cursor_t *c, uint32_t *val);
 
+/* --- 3. Edge Vector (Zero-Copy Builder) --- */
+#define EDGE_VECTOR_SCRATCH_SIZE 128
 
-#endif // LIBEDGE_EDGE_CORE_H
+typedef struct {
+    struct iovec *iovs;
+    int max_capacity;
+    int used_count;
+    size_t total_len;
+    uint8_t scratch[EDGE_VECTOR_SCRATCH_SIZE];
+    size_t scratch_used;
+    bool last_was_scratch;
+} edge_vector_t;
+
+void edge_vector_init(edge_vector_t *v, struct iovec *iovs, int max_capacity);
+size_t edge_vector_length(const edge_vector_t *v);
+const uint8_t* edge_vector_get_ptr(const edge_vector_t *v, size_t offset);
+edge_error_t edge_vector_append_ref(edge_vector_t *v, const void *ptr, size_t len);
+edge_error_t edge_vector_append_copy(edge_vector_t *v, const void *data, size_t len);
+edge_error_t edge_vector_patch(edge_vector_t *v, size_t offset, const void *data, size_t len);
+edge_error_t edge_vector_put_u8(edge_vector_t *v, uint8_t val);
+edge_error_t edge_vector_put_be16(edge_vector_t *v, uint16_t val);
+edge_error_t edge_vector_put_be32(edge_vector_t *v, uint32_t val);
+edge_error_t edge_vector_put_le16(edge_vector_t *v, uint16_t val);
+edge_error_t edge_vector_put_le32(edge_vector_t *v, uint32_t val);
+
+#endif

@@ -19,7 +19,7 @@ edge_error_t dnp3_transport_wrap(dnp3_transport_ctx_t *ctx, edge_vector_t *v, bo
     if (first) ctrl |= DNP3_TR_FIR;
     if (last)  ctrl |= DNP3_TR_FIN;
     
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, ctrl));
+    EP_ASSERT_OK(edge_vector_put_u8(v, ctrl));
     ctx->seq = (uint8_t)((ctx->seq + 1) & DNP3_TR_SEQ_MASK);
-    return EDGE_OK;
+    return EP_OK;
 }

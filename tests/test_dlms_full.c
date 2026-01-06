@@ -19,12 +19,12 @@ static void test_dlms_expert_full_chain(void **state) {
     
     // 1. 构建业务请求: GET Normal
     edge_dlms_object_t voltage = { .class_id = 3, .obis = {1,0,32,7,0,255}, .attribute_index = 2 };
-    assert_int_equal(edge_dlms_build_get_request(&enc, DLMS_GET_NORMAL, 0x01, &voltage), EDGE_OK);
+    assert_int_equal(edge_dlms_build_get_request(&enc, DLMS_GET_NORMAL, 0x01, &voltage), EP_OK);
     
     // 2. 应用安全层 (Suite 0: Auth & Encrypt)
     edge_dlms_security_ctx_t sec = { .policy = EDGE_DLMS_SEC_AUTH_ENCRYPTED, .invocation_counter = 100 };
     memcpy(sec.system_title, "EDGEOS01", 8);
-    assert_int_equal(edge_dlms_encrypt_apdu(&sec, &v, 0x30), EDGE_OK);
+    assert_int_equal(edge_dlms_encrypt_apdu(&sec, &v, 0x30), EP_OK);
     
     // 3. 验证结果
     assert_true(v.total_len > 20);

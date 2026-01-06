@@ -13,9 +13,9 @@ static void test_vector_scratch_overflow(void **state) {
     
     uint8_t large[100]; memset(large, 0xAA, 100);
     // 第一次 Copy 消耗 100 字节 (Scratchpad 剩余 28)
-    assert_int_equal(edge_vector_append_copy(&v, large, 100), EDGE_OK);
+    assert_int_equal(edge_vector_append_copy(&v, large, 100), EP_OK);
     // 第二次 Copy 50 字节，应当报错由于 Scratchpad 溢出
-    assert_int_equal(edge_vector_append_copy(&v, large, 50), EDGE_ERR_BUFFER_TOO_SMALL);
+    assert_int_equal(edge_vector_append_copy(&v, large, 50), EP_ERR_BUFFER_TOO_SMALL);
     assert_int_equal(v.used_count, 1);
 }
 
@@ -27,7 +27,7 @@ static void test_cursor_fragmented_read(void **state) {
     
     uint16_t val;
     // 跨越 1 字节的 iovec 边界读取 2 字节
-    assert_int_equal(edge_cursor_read_be16(&c, &val), EDGE_OK);
+    assert_int_equal(edge_cursor_read_be16(&c, &val), EP_OK);
     assert_int_equal(val, 0x1234);
 }
 
@@ -39,7 +39,7 @@ static void test_cursor_empty_iovec(void **state) {
     
     uint8_t val;
     // 应当能跳过空节点读取到 0xFF
-    assert_int_equal(edge_cursor_read_u8(&c, &val), EDGE_OK);
+    assert_int_equal(edge_cursor_read_u8(&c, &val), EP_OK);
     assert_int_equal(val, 0xFF);
 }
 

@@ -16,8 +16,8 @@ typedef enum {
  * @brief 构建 GET-Request-Normal
  */
 edge_error_t edge_d698_build_get_request(edge_vector_t *v, uint32_t oad) {
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, D698_SERVICE_GET_REQUEST));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x01)); // Method: Normal
+    EP_ASSERT_OK(edge_vector_put_u8(v, D698_SERVICE_GET_REQUEST));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x01)); // Method: Normal
     
     // OAD (4 bytes)
     return edge_vector_put_be32(v, oad);
@@ -27,10 +27,10 @@ edge_error_t edge_d698_build_get_request(edge_vector_t *v, uint32_t oad) {
  * @brief 构建 ACTION-Request-Normal
  */
 edge_error_t edge_d698_build_action_request(edge_vector_t *v, uint32_t omad, const uint8_t *data, size_t len) {
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, D698_SERVICE_ACTION_REQUEST));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x01)); // Method: Normal
+    EP_ASSERT_OK(edge_vector_put_u8(v, D698_SERVICE_ACTION_REQUEST));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x01)); // Method: Normal
     
-    EDGE_ASSERT_OK(edge_vector_put_be32(v, omad));
+    EP_ASSERT_OK(edge_vector_put_be32(v, omad));
     // 后续对接 698 Data 类型编解码
     return edge_vector_append_ref(v, data, len);
 }

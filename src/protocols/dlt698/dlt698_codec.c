@@ -28,13 +28,13 @@ edge_error_t edge_d698_encode_oad(edge_vector_t *v, uint32_t oad) {
  */
 edge_error_t edge_d698_parse_data(edge_cursor_t *c, d698_data_tag_t *tag, const uint8_t **payload, size_t *len) {
     uint8_t t;
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &t));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &t));
     *tag = (d698_data_tag_t)t;
     
     switch(t) {
         case D698_TAG_OCTET_STRING: {
             uint8_t l;
-            EDGE_ASSERT_OK(edge_cursor_read_u8(c, &l));
+            EP_ASSERT_OK(edge_cursor_read_u8(c, &l));
             *len = l;
             *payload = edge_cursor_get_ptr(c, l);
             break;
@@ -44,7 +44,7 @@ edge_error_t edge_d698_parse_data(edge_cursor_t *c, d698_data_tag_t *tag, const 
             *payload = edge_cursor_get_ptr(c, 2);
             break;
         }
-        default: return EDGE_ERR_NOT_SUPPORTED;
+        default: return EP_ERR_NOT_SUPPORTED;
     }
-    return EDGE_OK;
+    return EP_OK;
 }

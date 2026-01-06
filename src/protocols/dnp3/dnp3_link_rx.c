@@ -49,7 +49,7 @@ edge_error_t edge_dnp3_parse_stream(dnp3_link_rx_t *rx, edge_cursor_t *c, uint8_
                     uint16_t h_crc = (uint16_t)(rx->header[8] | (rx->header[9] << 8));
                     if (edge_crc16_dnp3(rx->header, 8) != h_crc) {
                         rx->state = DNP3_RX_STATE_SYNC1;
-                        return EDGE_ERR_CHECKSUM;
+                        return EP_ERR_CHECKSUM;
                     }
                     rx->payload_len = (uint8_t)(rx->header[2] - 5);
                     rx->state = DNP3_RX_STATE_DATA_BLOCK;
@@ -77,15 +77,15 @@ edge_error_t edge_dnp3_parse_stream(dnp3_link_rx_t *rx, edge_cursor_t *c, uint8_
             }
             case DNP3_RX_STATE_CRC: {
                 uint16_t r_crc;
-                if (edge_cursor_read_be16(c, &r_crc) == EDGE_OK) {
-                    if (rx->current_crc != r_crc) return EDGE_ERR_CHECKSUM;
+                if (edge_cursor_read_be16(c, &r_crc) == EP_OK) {
+                    if (rx->current_crc != r_crc) return EP_ERR_CHECKSUM;
                     // ... 继续解析下一个 16 字节块直到 payload_len 为 0 ...
                     rx->state = DNP3_RX_STATE_SYNC1; // 演示完成
-                    return EDGE_OK;
+                    return EP_OK;
                 }
                 break;
             }
         }
     }
-    return EDGE_ERR_INCOMPLETE_DATA;
+    return EP_ERR_INCOMPLETE_DATA;
 }

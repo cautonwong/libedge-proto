@@ -28,10 +28,10 @@ const void* edge_cursor_get_ptr(edge_cursor_t *c, size_t len) {
 }
 
 edge_error_t edge_cursor_read_bytes(edge_cursor_t *c, uint8_t *buf, size_t len) {
-    if (!c || !buf) return EDGE_ERR_INVALID_ARG;
+    if (!c || !buf) return EP_ERR_INVALID_ARG;
     const void *ptr = edge_cursor_get_ptr(c, len);
-    if (ptr) { memcpy(buf, ptr, len); return EDGE_OK; }
-    if (edge_cursor_remaining(c) < len) return EDGE_ERR_INCOMPLETE_DATA;
+    if (ptr) { memcpy(buf, ptr, len); return EP_OK; }
+    if (edge_cursor_remaining(c) < len) return EP_ERR_INCOMPLETE_DATA;
     size_t copied = 0;
     while (copied < len) {
         size_t avail = c->iovs[c->current_iov].iov_len - c->current_offset;
@@ -40,16 +40,16 @@ edge_error_t edge_cursor_read_bytes(edge_cursor_t *c, uint8_t *buf, size_t len) 
         c->current_offset += to_copy; copied += to_copy; c->total_read += to_copy;
         if (c->current_offset >= c->iovs[c->current_iov].iov_len) { c->current_iov++; c->current_offset = 0; }
     }
-    return EDGE_OK;
+    return EP_OK;
 }
 
 edge_error_t edge_cursor_read_u8(edge_cursor_t *c, uint8_t *val) { return edge_cursor_read_bytes(c, val, 1); }
 edge_error_t edge_cursor_read_be16(edge_cursor_t *c, uint16_t *val) {
-    uint16_t raw; EDGE_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 2)); *val = be16toh(raw); return EDGE_OK;
+    uint16_t raw; EP_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 2)); *val = be16toh(raw); return EP_OK;
 }
 edge_error_t edge_cursor_read_le16(edge_cursor_t *c, uint16_t *val) {
-    uint16_t raw; EDGE_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 2)); *val = le16toh(raw); return EDGE_OK;
+    uint16_t raw; EP_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 2)); *val = le16toh(raw); return EP_OK;
 }
 edge_error_t edge_cursor_read_be32(edge_cursor_t *c, uint32_t *val) {
-    uint32_t raw; EDGE_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 4)); *val = be32toh(raw); return EDGE_OK;
+    uint32_t raw; EP_ASSERT_OK(edge_cursor_read_bytes(c, (uint8_t*)&raw, 4)); *val = be32toh(raw); return EP_OK;
 }

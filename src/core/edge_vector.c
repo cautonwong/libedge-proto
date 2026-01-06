@@ -25,42 +25,42 @@ const uint8_t* edge_vector_get_ptr(const edge_vector_t *v, size_t offset) {
  * @brief [专家级 API] 修改已写入的数据 (用于长度回填)
  */
 edge_error_t edge_vector_patch(edge_vector_t *v, size_t offset, const void *data, size_t len) {
-    if (!v || offset + len > v->total_len) return EDGE_ERR_OUT_OF_BOUNDS;
+    if (!v || offset + len > v->total_len) return EP_ERR_OUT_OF_BOUNDS;
     uint8_t *p = (uint8_t *)edge_vector_get_ptr(v, offset);
     if (p) {
         memcpy(p, data, len);
-        return EDGE_OK;
+        return EP_OK;
     }
-    return EDGE_ERR_GENERIC;
+    return EP_ERR_GENERIC;
 }
 
 edge_error_t edge_vector_append_ref(edge_vector_t *v, const void *ptr, size_t len) {
-    if (!v || !ptr || len == 0) return EDGE_ERR_INVALID_ARG;
-    if (v->used_count >= v->max_capacity) return EDGE_ERR_BUFFER_TOO_SMALL;
+    if (!v || !ptr || len == 0) return EP_ERR_INVALID_ARG;
+    if (v->used_count >= v->max_capacity) return EP_ERR_BUFFER_TOO_SMALL;
     v->iovs[v->used_count].iov_base = (void *)ptr;
     v->iovs[v->used_count].iov_len = len;
     v->used_count++; v->total_len += len;
     v->last_was_scratch = false;
-    return EDGE_OK;
+    return EP_OK;
 }
 
 edge_error_t edge_vector_append_copy(edge_vector_t *v, const void *data, size_t len) {
-    if (!v || !data || len == 0) return EDGE_ERR_INVALID_ARG;
+    if (!v || !data || len == 0) return EP_ERR_INVALID_ARG;
     if (v->last_was_scratch && (v->scratch_used + len <= EDGE_VECTOR_SCRATCH_SIZE)) {
         memcpy(&v->scratch[v->scratch_used], data, len);
         v->iovs[v->used_count - 1].iov_len += len;
         v->scratch_used += len; v->total_len += len;
-        return EDGE_OK;
+        return EP_OK;
     }
     if (v->used_count >= v->max_capacity || v->scratch_used + len > EDGE_VECTOR_SCRATCH_SIZE) 
-        return EDGE_ERR_BUFFER_TOO_SMALL;
+        return EP_ERR_BUFFER_TOO_SMALL;
     void *dest = &v->scratch[v->scratch_used];
     memcpy(dest, data, len);
     v->iovs[v->used_count].iov_base = dest;
     v->iovs[v->used_count].iov_len = len;
     v->used_count++; v->scratch_used += len; v->total_len += len;
     v->last_was_scratch = true;
-    return EDGE_OK;
+    return EP_OK;
 }
 
 edge_error_t edge_vector_put_u8(edge_vector_t *v, uint8_t val) { return edge_vector_append_copy(v, &val, 1); }

@@ -22,7 +22,7 @@ static void test_iec104_expert_session(void **state) {
     struct iovec resp_iov[4]; edge_vector_t resp; edge_vector_init(&resp, resp_iov, 4);
     
     // 执行会话处理
-    assert_int_equal(edge_iec104_session_on_recv(&ctx, &c, &resp), EDGE_OK);
+    assert_int_equal(edge_iec104_session_on_recv(&ctx, &c, &resp), EP_OK);
     
     // 验证接收序列号 V(R) 已滚动到 2
     assert_int_equal(ctx.v_r, 2);
@@ -38,7 +38,7 @@ static void test_iec104_invalid_sync(void **state) {
     edge_cursor_t c; edge_cursor_init(&c, &iov, 1);
     
     uint16_t c1, c2;
-    assert_int_equal(edge_iec104_parse_apci(&c, &c1, &c2), EDGE_ERR_INVALID_FRAME);
+    assert_int_equal(edge_iec104_parse_apci(&c, &c1, &c2), EP_ERR_INVALID_FRAME);
 }
 
 int main(void) {

@@ -8,7 +8,7 @@ edge_error_t edge_iec104_session_on_recv(edge_iec104_context_t *ctx, edge_cursor
     uint16_t ctrl1, ctrl2;
     
     // 1. 调用高质量解析器提取控制域 (内部处理小端转换)
-    EDGE_ASSERT_OK(edge_iec104_parse_apci(c, &ctrl1, &ctrl2));
+    EP_ASSERT_OK(edge_iec104_parse_apci(c, &ctrl1, &ctrl2));
 
     if (ctrl1 & 0x01) {
         if (ctrl1 & 0x02) { // U-Frame
@@ -25,5 +25,5 @@ edge_error_t edge_iec104_session_on_recv(edge_iec104_context_t *ctx, edge_cursor
         ctx->v_r = (uint16_t)(((ctrl1 >> 1) + 1) & 0x7FFF);
     }
     
-    return EDGE_OK;
+    return EP_OK;
 }

@@ -34,6 +34,11 @@ typedef enum {
     DLMS_APDU_GET_RESPONSE          = 196,
 } edge_dlms_apdu_tag_t;
 
+#define DLMS_SERVICE_AARQ 0x60
+#define DLMS_SERVICE_AARE 0x61
+#define DLMS_SERVICE_GET_REQUEST 192
+#define DLMS_SERVICE_GET_RESPONSE 196
+
 typedef enum {
     DLMS_GET_NORMAL                 = 1,
     DLMS_GET_NEXT                   = 2,
@@ -130,6 +135,9 @@ void edge_hdlc_reset(edge_hdlc_manager_t *mgr);
 edge_error_t edge_hdlc_build_snrm(edge_hdlc_manager_t *mgr, edge_vector_t *v);
 edge_error_t edge_hdlc_build_iframe(edge_hdlc_manager_t *mgr, edge_vector_t *v, const void *apdu, size_t len, bool final);
 edge_error_t edge_hdlc_parse(edge_hdlc_manager_t *mgr, edge_cursor_t *c, uint8_t *apdu_out, size_t *apdu_len);
+
+edge_error_t edge_dlms_build_aarq(edge_dlms_encoder_t *enc);
+edge_error_t edge_dlms_build_get_request(edge_dlms_encoder_t *enc, edge_dlms_service_type_t type, uint8_t invoke_id, const edge_dlms_object_t *obj);
 
 edge_error_t edge_dlms_server_dispatch(edge_dlms_context_t *ctx, edge_cursor_t *req, edge_vector_t *resp);
 

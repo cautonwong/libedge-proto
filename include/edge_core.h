@@ -6,25 +6,24 @@
 #include <stdbool.h>
 #include <sys/uio.h>
 
-/* --- 1. Error Codes --- */
+/* --- 1. Error Codes (Protocol Submodule Specific) --- */
 typedef enum {
-    EDGE_OK = 0,
-    EDGE_ERR_GENERIC = -1,
-    EDGE_ERR_INVALID_ARG = -2,
-    EDGE_ERR_INCOMPLETE_DATA = -3,
-    EDGE_ERR_BUFFER_TOO_SMALL = -4,
-    EDGE_ERR_NOT_SUPPORTED = -5,
-    EDGE_ERR_OVERFLOW = -6,
-    EDGE_ERR_INVALID_STATE = -7,
-    EDGE_ERR_CHECKSUM = -8,
-    EDGE_ERR_INVALID_FRAME = -9,
-    EDGE_ERR_OUT_OF_BOUNDS = -10, // [补全] DNP3 需求
-    EDGE_ERR_GENERAL = -11        // [补全] 兼容性需求
+    EP_OK = 0,
+    EP_ERR_GENERIC = -1,
+    EP_ERR_INVALID_ARG = -2,
+    EP_ERR_INCOMPLETE_DATA = -3,
+    EP_ERR_BUFFER_TOO_SMALL = -4,
+    EP_ERR_NOT_SUPPORTED = -5,
+    EP_ERR_OVERFLOW = -6,
+    EP_ERR_INVALID_STATE = -7,
+    EP_ERR_CHECKSUM = -8,
+    EP_ERR_INVALID_FRAME = -9,
+    EP_ERR_OUT_OF_BOUNDS = -10
 } edge_error_t;
 
-#define EDGE_ASSERT_OK(expr) do { \
+#define EP_ASSERT_OK(expr) do { \
     edge_error_t _err = (expr); \
-    if (_err != EDGE_OK) return _err; \
+    if (_err != EP_OK) return _err; \
 } while(0)
 
 /* --- 2. Edge Cursor (Zero-Copy Parser) --- */

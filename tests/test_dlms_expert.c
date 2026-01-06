@@ -25,7 +25,7 @@ static void test_dlms_axdr_expert_nesting(void **state) {
 
     edge_cursor_t c; edge_cursor_init(&c, v.iovs, v.used_count);
     edge_dlms_variant_t var;
-    assert_int_equal(edge_dlms_decode_variant(&c, &var), EDGE_OK);
+    assert_int_equal(edge_dlms_decode_variant(&c, &var), EP_OK);
     assert_int_equal(var.tag, DLMS_TAG_ARRAY);
     assert_int_equal(var.length, 1);
 }
@@ -33,7 +33,7 @@ static void test_dlms_axdr_expert_nesting(void **state) {
 // [新增专家级测试]：验证从站分发逻辑
 static edge_error_t mock_get_handler(const edge_dlms_object_t *obj, edge_dlms_variant_t *val, void *user) {
     (void)obj; (void)val; (void)user;
-    return EDGE_OK;
+    return EP_OK;
 }
 
 static void test_dlms_server_dispatch_basic(void **state) {
@@ -53,7 +53,7 @@ static void test_dlms_server_dispatch_basic(void **state) {
 
     struct iovec resp_iov[4]; edge_vector_t v; edge_vector_init(&v, resp_iov, 4);
     
-    assert_int_equal(edge_dlms_server_dispatch(&ctx, &c, &v), EDGE_OK);
+    assert_int_equal(edge_dlms_server_dispatch(&ctx, &c, &v), EP_OK);
     // 验证响应头部: [GET-Response] [Normal] [InvokeID] [Result:Success]
     uint8_t *resp_data = (uint8_t*)v.iovs[0].iov_base;
     assert_int_equal(resp_data[0], 196);

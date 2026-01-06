@@ -30,7 +30,7 @@ static void test_modbus_rtu_read_holding_registers(void **state) {
     edge_vector_init(&v, iov, MODBUS_MAX_IOVEC);
 
     edge_error_t err = edge_modbus_build_read_holding_registers(&ctx, &v, 100, 5);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     // Expected frame:
     // Slave ID: 0x01
@@ -61,7 +61,7 @@ static void test_modbus_tcp_read_holding_registers(void **state) {
     edge_vector_init(&v, iov, MODBUS_MAX_IOVEC);
 
     edge_error_t err = edge_modbus_build_read_holding_registers(&ctx, &v, 100, 5);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     // Expected frame:
     // Transaction ID: 0x3039 (12345)
@@ -95,7 +95,7 @@ static void test_modbus_tcp_write_single_register(void **state) {
     uint16_t value = 0xABCD;
 
     edge_error_t err = edge_modbus_build_write_single_register_req(&ctx, &v, address, value);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     // Expected frame:
     // Transaction ID: 0x07D1 (2001)
@@ -126,7 +126,7 @@ static void test_modbus_tcp_read_coils(void **state) {
     edge_vector_init(&v, iov, MODBUS_MAX_IOVEC);
     
     edge_error_t err = edge_modbus_build_read_coils_req(&ctx, &v, 20, 10);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     uint8_t expected[] = {0x00, 0x65, 0x00, 0x00, 0x00, 0x06, 0x05, 0x01, 0x00, 0x14, 0x00, 0x0A};
     assert_int_equal(v.total_len, sizeof(expected));
@@ -148,7 +148,7 @@ static void test_modbus_tcp_read_discrete_inputs(void **state) {
     edge_vector_init(&v, iov, MODBUS_MAX_IOVEC);
 
     edge_error_t err = edge_modbus_build_read_discrete_inputs_req(&ctx, &v, 30, 12);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     uint8_t expected[] = {0x00, 0x66, 0x00, 0x00, 0x00, 0x06, 0x03, 0x02, 0x00, 0x1E, 0x00, 0x0C};
     assert_int_equal(v.total_len, sizeof(expected));
@@ -172,7 +172,7 @@ static void test_modbus_tcp_write_multiple_coils(void **state) {
     uint8_t data[] = {0xCA, 0x01};
 
     edge_error_t err = edge_modbus_build_write_multiple_coils_req(&ctx, &v, 19, 10, data);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     // TID(301) Proto(0) Len(9) UID(1) FC(15) Addr(19) Qty(10) Bytes(2) Data(CA, 01)
     uint8_t expected[] = {0x01, 0x2D, 0x00, 0x00, 0x00, 0x09, 0x01, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCA, 0x01};
@@ -197,7 +197,7 @@ static void test_modbus_tcp_write_multiple_registers(void **state) {
     uint16_t data[] = {0x0A0B, 0x0C0D}; // Write 2 registers
 
     edge_error_t err = edge_modbus_build_write_multiple_registers_req(&ctx, &v, 100, 2, data);
-    assert_int_equal(err, EDGE_OK);
+    assert_int_equal(err, EP_OK);
 
     // TID(401) Proto(0) Len(11) UID(1) FC(16) Addr(100) Qty(2) Bytes(4) Data(0A0B, 0x0C0D)
     uint8_t expected[] = {0x01, 0x91, 0x00, 0x00, 0x00, 0x0B, 0x01, 0x10, 0x00, 0x64, 0x00, 0x02, 0x04, 0x0A, 0x0B, 0x0C, 0x0D};

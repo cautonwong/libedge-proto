@@ -21,9 +21,9 @@ typedef struct {
  * @brief 解析 DNP3 对象头 (Object Header)
  */
 edge_error_t dnp3_parse_object_header(edge_cursor_t *c, dnp3_object_header_t *head) {
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &head->group));
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &head->variation));
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &head->qualifier));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &head->group));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &head->variation));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &head->qualifier));
     
     // 根据 Qualifier 解析范围 (Range)
     uint8_t q_code = head->qualifier & 0x0F;
@@ -37,7 +37,7 @@ edge_error_t dnp3_parse_object_header(edge_cursor_t *c, dnp3_object_header_t *he
         head->range_start = s; head->range_stop = e;
     }
     
-    return EDGE_OK;
+    return EP_OK;
 }
 
 /**
@@ -46,13 +46,13 @@ edge_error_t dnp3_parse_object_header(edge_cursor_t *c, dnp3_object_header_t *he
 edge_error_t dnp3_build_read_request(edge_vector_t *v, uint8_t app_seq, uint8_t group, uint8_t variation) {
     // Application Control: FIR, FIN, CON, SEQ
     uint8_t app_ctrl = 0xC0 | (app_seq & 0x0F);
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, app_ctrl));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, DNP3_FC_READ));
+    EP_ASSERT_OK(edge_vector_put_u8(v, app_ctrl));
+    EP_ASSERT_OK(edge_vector_put_u8(v, DNP3_FC_READ));
     
     // Object Header: Group, Variation, Qualifier=0x06 (All objects)
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, group));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, variation));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x06));
+    EP_ASSERT_OK(edge_vector_put_u8(v, group));
+    EP_ASSERT_OK(edge_vector_put_u8(v, variation));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x06));
     
-    return EDGE_OK;
+    return EP_OK;
 }

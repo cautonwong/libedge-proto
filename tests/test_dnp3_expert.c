@@ -18,7 +18,7 @@ static void test_dnp3_link_layer_segmentation(void **state) {
     uint8_t payload[20];
     for(int i=0; i<20; i++) payload[i] = (uint8_t)i;
 
-    assert_int_equal(edge_dnp3_build_link_frame(&ctx, &v, 0x44, payload, 20), EDGE_OK);
+    assert_int_equal(edge_dnp3_build_link_frame(&ctx, &v, 0x44, payload, 20), EP_OK);
 
     // 预期长度: Header(10) + Data1(16) + CRC1(2) + Data2(4) + CRC2(2) = 34 字节
     assert_int_equal(v.total_len, 34);

@@ -19,11 +19,11 @@ void edge_dlt645_init(edge_dlt645_context_t *ctx, const char *addr_str) {
 }
 
 edge_error_t edge_dlt645_build_read_req(edge_dlt645_context_t *ctx, edge_vector_t *v, uint32_t di) {
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x68));
-    EDGE_ASSERT_OK(edge_vector_append_copy(v, ctx->addr_bcd, 6));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x68));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x11)); // Read Control
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 4));    // Length
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x68));
+    EP_ASSERT_OK(edge_vector_append_copy(v, ctx->addr_bcd, 6));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x68));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x11)); // Read Control
+    EP_ASSERT_OK(edge_vector_put_u8(v, 4));    // Length
     
     // DI with 0x33 offset
     uint8_t di_bytes[4];
@@ -31,7 +31,7 @@ edge_error_t edge_dlt645_build_read_req(edge_dlt645_context_t *ctx, edge_vector_
     di_bytes[1] = (uint8_t)(((di >> 8) & 0xFF) + 0x33);
     di_bytes[2] = (uint8_t)(((di >> 16) & 0xFF) + 0x33);
     di_bytes[3] = (uint8_t)(((di >> 24) & 0xFF) + 0x33);
-    EDGE_ASSERT_OK(edge_vector_append_copy(v, di_bytes, 4));
+    EP_ASSERT_OK(edge_vector_append_copy(v, di_bytes, 4));
     
     // CS
     uint8_t cs = 0;
@@ -40,10 +40,10 @@ edge_error_t edge_dlt645_build_read_req(edge_dlt645_context_t *ctx, edge_vector_
             cs += ((uint8_t*)v->iovs[i].iov_base)[j];
         }
     }
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, cs));
-    EDGE_ASSERT_OK(edge_vector_put_u8(v, 0x16)); // End
+    EP_ASSERT_OK(edge_vector_put_u8(v, cs));
+    EP_ASSERT_OK(edge_vector_put_u8(v, 0x16)); // End
     
-    return EDGE_OK;
+    return EP_OK;
 }
 
 edge_error_t edge_dlt645_parse_frame(edge_dlt645_context_t *ctx, edge_cursor_t *c, uint32_t *out_di, const uint8_t **out_data, size_t *out_len) {
@@ -54,20 +54,20 @@ edge_error_t edge_dlt645_parse_frame(edge_dlt645_context_t *ctx, edge_cursor_t *
         if (b == 0x68) break;
     }
     
-    if (edge_cursor_remaining(c) < 11) return EDGE_ERR_INCOMPLETE_DATA;
+    if (edge_cursor_remaining(c) < 11) return EP_ERR_INCOMPLETE_DATA;
     
     uint8_t addr[6];
-    EDGE_ASSERT_OK(edge_cursor_read_bytes(c, addr, 6));
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &b)); // 68
+    EP_ASSERT_OK(edge_cursor_read_bytes(c, addr, 6));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &b)); // 68
     
     uint8_t ctrl, len;
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &ctrl));
-    EDGE_ASSERT_OK(edge_cursor_read_u8(c, &len));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &ctrl));
+    EP_ASSERT_OK(edge_cursor_read_u8(c, &len));
     
-    if (len < 4) return EDGE_ERR_INVALID_FRAME;
+    if (len < 4) return EP_ERR_INVALID_FRAME;
     
     uint8_t di_bytes[4];
-    EDGE_ASSERT_OK(edge_cursor_read_bytes(c, di_bytes, 4));
+    EP_ASSERT_OK(edge_cursor_read_bytes(c, di_bytes, 4));
     *out_di = (uint32_t)(di_bytes[0] - 0x33) | 
               ((uint32_t)(di_bytes[1] - 0x33) << 8) |
               ((uint32_t)(di_bytes[2] - 0x33) << 16) |
@@ -76,5 +76,5 @@ edge_error_t edge_dlt645_parse_frame(edge_dlt645_context_t *ctx, edge_cursor_t *
     *out_len = len - 4;
     *out_data = edge_cursor_get_ptr(c, *out_len);
     
-    return EDGE_OK;
+    return EP_OK;
 }

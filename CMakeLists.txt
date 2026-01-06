@@ -40,9 +40,7 @@ target_include_directories(edge_proto PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 if(LIBEDGE_BUILD_TESTS)
     enable_testing()
-    include(FetchContent)
-    FetchContent_Declare(cmocka GIT_REPOSITORY https://git.cryptomilk.org/projects/cmocka.git GIT_TAG cmocka-1.1.5)
-    FetchContent_MakeAvailable(cmocka)
+    find_package(cmocka REQUIRED)
 
     macro(add_proto_test NAME SRC)
         add_executable(${NAME} ${SRC})

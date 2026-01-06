@@ -17,28 +17,39 @@ typedef enum {
 } edge_error_t;
 
 // The Vector Builder (Writer)
+#define VECTOR_SCRATCH_POOL_SIZE 64 // A small pool for tiny copies, can be tuned
 typedef struct {
     struct iovec *iovs;       // Pointer to the iovec array provided by the caller
     int max_capacity;         // The maximum number of iovec segments allowed
     int used_count;           // The number of iovec segments currently used
     size_t total_len;         // The total byte length of all segments combined
-} edge_vector_t;
-
-// The Vector Cursor (Reader)
-typedef struct {
-    const struct iovec *iovs; // The array of iovec segments to read from
-    int count;                // The number of segments in the iovs array
-    int current_iov;          // The index of the current iovec segment being read
-    size_t current_offset;    // The offset within the current iovec segment
-    size_t total_read;        // Total bytes read from the start
-} edge_cursor_t;
-
-
-// --- Vector API ---
-void edge_vector_init(edge_vector_t *v, struct iovec *iovs, int max_capacity);
-void edge_vector_append_ref(edge_vector_t *v, const void *ptr, size_t len);
-void edge_vector_append_copy(edge_vector_t *v, void *scratch_buffer, const void *data, size_t len);
-
+    
+    // Internal scratch pool for tiny fixed-size copies (e.g., single bytes, uint16)
+        uint8_t scratch_pool[VECTOR_SCRATCH_POOL_SIZE];
+        size_t scratch_offset;
+    } edge_vector_t;
+    
+    // The Vector Cursor (Reader)
+    typedef struct {
+        const struct iovec *iovs; // The array of iovec segments to read from
+        int count;                // The number of segments in the iovs array
+        int current_iov;          // The index of the current iovec segment being read
+        size_t current_offset;    // The offset within the current iovec segment
+        size_t total_read;        // Total bytes read from the start
+    } edge_cursor_t;
+    
+    // Macro for asserting OK status and propagating error
+    #define EDGE_ASSERT_OK(expr) \
+        do { \
+            edge_error_t _err = (expr); \
+            if (_err != EDGE_OK) return _err; \
+        } while(0)
+    
+    
+    // --- Vector API ---
+    void edge_vector_init(edge_vector_t *v, struct iovec *iovs, int max_capacity);
+    edge_error_t edge_vector_append_ref(edge_vector_t *v, const void *ptr, size_t len);
+    edge_error_t edge_vector_append_copy(edge_vector_t *v, const void *data, size_t len);
 
 // --- Cursor API ---
 void edge_cursor_init(edge_cursor_t *c, const struct iovec *iovs, int count);
